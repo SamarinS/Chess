@@ -20,7 +20,7 @@ public class MainActivity extends ActionBarActivity {
     private Game game;
 
     private MyImageView selectedSquare;
-    private TextView gameStatusText;
+    private TextView gameStatusLabel;
 
     private MyImageView[][] squareImageArray = new  MyImageView[8][8];
     private Button unmakeMoveButton;
@@ -35,7 +35,7 @@ public class MainActivity extends ActionBarActivity {
 //        game.setInitialPosition();
         game.setTestPosition();
 
-        gameStatusText = (TextView) findViewById(R.id.game_status_text);
+        gameStatusLabel = (TextView) findViewById(R.id.game_status_text);
 
 
         selectedSquare = null;
@@ -70,12 +70,38 @@ public class MainActivity extends ActionBarActivity {
 
 
     private void onGameStateChanged() {
+        String gameStatusText = "";
+        if(game.getState() != Game.State.PROCESS) {
+            selectedSquare = null;
+            switch(game.getState()) {
+                case DRAW:
+                    gameStatusText = "Патовая позиция. Ничья!";
+                    break;
+                case WIN:
+                    if(game.getSideToMove() == Color.BLACK) {
+                        gameStatusText = "Мат. Белые выиграли!";
+                    } else { // WHITE
+                        gameStatusText = "Мат. Черные выиграли!";
+                    }
+                    break;
+            }
+            new AlertDialog.Builder(MainActivity.this).setMessage(gameStatusText).setNeutralButton("Закрыть", null).show();
+        } else {
+            if(game.getSideToMove() == Color.WHITE) {
+                gameStatusText = "Ход белых";
+            } else {
+                gameStatusText = "Ход черных";
+            }
+        }
+
+        gameStatusLabel.setText(gameStatusText);
+
         for(int i = 0;i<8;i++) {
             for(int j = 0;j<8;j++) {
                 squareImageArray[i][j].invalidate();
             }
         }
-        setGameStatusText();
+
         unmakeMoveButton.setEnabled(game.hasPositionChanged());
     }
 
@@ -101,13 +127,9 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void setGameStatusText() {
-        if(game.getSideToMove() == Color.WHITE) {
-            gameStatusText.setText("Ход белых");
-        } else {
-            gameStatusText.setText("Ход черных");
-        }
-    }
+//    private void setGameStatusText() {
+//
+//    }
 
     private void tryMakeMove(Square from, Square to) {
         boolean flag = game.makeMove(from, to);
@@ -139,6 +161,10 @@ public class MainActivity extends ActionBarActivity {
             setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(game.getState() != Game.State.PROCESS) {
+                        return;
+                    }
+
                     MyImageView myView = (MyImageView) v;
                     if(selectedSquare != myView)
                     {

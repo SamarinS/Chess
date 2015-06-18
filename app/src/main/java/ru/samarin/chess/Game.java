@@ -4,8 +4,12 @@ package ru.samarin.chess;
 import java.util.ArrayList;
 
 public class Game {
+    public enum State {
+        PROCESS, WIN, DRAW
+    }
+
     private Board board;
-    //private State state;
+    private State state;
     private Color sideToMove;
     private MoveGenerator moveGenerator;
     private CastlingState castlingState;
@@ -59,12 +63,7 @@ public class Game {
         }
     }
     
-    /*
-    public enum State {
-        PROCESS, BLACK_WIN, WHITE_WIN, DRAW
-    }
-    */
-    
+
 //    public static void main(String[] args) {
 //        System.out.println("Hello chess!");
 //
@@ -125,6 +124,7 @@ public class Game {
 //    }
     
     public Game() {
+        state = State.PROCESS;
         board = new Board();
         castlingState = new CastlingState();
         moveGenerator = new MoveGenerator(board, castlingState);
@@ -153,6 +153,10 @@ public class Game {
         return sideToMove;
     }
 
+    public State getState() {
+        return state;
+    }
+
     public boolean hasPositionChanged() {
         return !moveHistory.isEmpty();
     }
@@ -160,16 +164,25 @@ public class Game {
     public void setTestPosition() {
         //state = State.PROCESS;
         sideToMove = Color.WHITE;
+
+        //Promotion
 //        board.setSquare("g7", Piece.PAWN, Color.WHITE);
 //        board.setSquare("h8", Piece.KNIGHT, Color.BLACK);
 //        board.setSquare("f8", Piece.BISHOP, Color.BLACK);
-        board.setSquare("a1", Piece.ROOK, Color.WHITE);
-        board.setSquare("e1", Piece.KING, Color.WHITE);
-        board.setSquare("h1", Piece.ROOK, Color.WHITE);
 
-        board.setSquare("a8", Piece.ROOK, Color.BLACK);
-        board.setSquare("e8", Piece.KING, Color.BLACK);
-        board.setSquare("h8", Piece.ROOK, Color.BLACK);
+        //Castling
+//        board.setSquare("a1", Piece.ROOK, Color.WHITE);
+//        board.setSquare("e1", Piece.KING, Color.WHITE);
+//        board.setSquare("h1", Piece.ROOK, Color.WHITE);
+//
+//        board.setSquare("a8", Piece.ROOK, Color.BLACK);
+//        board.setSquare("e8", Piece.KING, Color.BLACK);
+//        board.setSquare("h8", Piece.ROOK, Color.BLACK);
+
+        //Mate
+        board.setSquare("a7", Piece.ROOK, Color.BLACK);
+        board.setSquare("b7", Piece.ROOK, Color.BLACK);
+        board.setSquare("e8", Piece.KING, Color.WHITE);
     }
     
     public void setInitialPosition() {
@@ -253,6 +266,7 @@ public class Game {
         // updating castling state
         int moveNumber = moveHistory.size();
         castlingState.onUnMakeMove(moveNumber);
+        state = State.PROCESS;
 
         return true;
     }
@@ -360,7 +374,11 @@ public class Game {
         if(from.isOut() || to.isOut()) {
             throw new RuntimeException("<from> or <to> square is out of the board");
         }
-        
+
+        if(state != State.PROCESS) {
+            return false;
+        }
+
         Color color = board.getColor(from);
         if(color != sideToMove) {
             return false;
@@ -377,11 +395,36 @@ public class Game {
                     unmakeMove();
                     return false;
                 }
+
+                // detecting checkmate and stalemate
+                if(!isTherePossibleMove()) {
+                    if(moveGenerator.isKingUnderAttack(sideToMove)) {
+                        // mate
+                        state = State.WIN;
+                    } else {
+                        // stalemate
+                        state = State.DRAW;
+                    }
+                }
+
                 return true;
             }
         }
         
         return false;
+    }
+
+    private boolean isTherePossibleMove() {
+        ArrayList<Move> moveList = moveGenerator.generateAllMoves(sideToMove);
+        boolean flag = false;
+        for(Move move: moveList) {
+            makeMoveWithoutCheck(move);
+            if(!moveGenerator.isKingUnderAttack(Color.getOppositeColor(sideToMove))) {
+               flag = true;
+            }
+            unmakeMove();
+        }
+        return flag;
     }
     
     public Color getColor(Square square) {
