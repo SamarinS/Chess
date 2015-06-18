@@ -13,6 +13,20 @@ public class MoveGenerator {
         this.board = board;
         this.castlingState = castlingState;
     }
+
+
+    public boolean isKingUnderAttack(Color color) {
+        Color sideToMove = Color.getOppositeColor(color);
+        ArrayList<Move> moveList = generateAllMoves(sideToMove);
+        for(Move move: moveList) {
+            if(move.isCapture &&
+               move.capturedPiece == Piece.KING
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     
     public ArrayList<Move> generateAllMoves(Color color) {

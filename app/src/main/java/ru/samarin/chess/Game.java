@@ -258,6 +258,105 @@ public class Game {
 
         return true;
     }
+
+    private void makeMoveWithoutCheck(Move move) {
+        Square from = move.firstSquare;
+        Square to = move.secondSquare;
+        switch(move.type) {
+            case SHORT_CASTLING:
+                if(sideToMove == Color.WHITE) {
+                    board.setSquareEmpty("e1");
+                    board.setSquare("g1", Piece.KING, Color.WHITE);
+                    board.setSquareEmpty("h1");
+                    board.setSquare("f1", Piece.ROOK, Color.WHITE);
+                } else { // color == Color.BLACK
+                    board.setSquareEmpty("e8");
+                    board.setSquare("g8", Piece.KING, Color.BLACK);
+                    board.setSquareEmpty("h8");
+                    board.setSquare("f8", Piece.ROOK, Color.BLACK);
+                }
+                board.setSquare(to, Piece.KING, sideToMove);
+                break;
+            case LONG_CASTLING:
+                if(sideToMove == Color.WHITE) {
+                    board.setSquareEmpty("e1");
+                    board.setSquare("c1", Piece.KING, Color.WHITE);
+                    board.setSquareEmpty("a1");
+                    board.setSquare("d1", Piece.ROOK, Color.WHITE);
+                } else { // color == Color.BLACK
+                    board.setSquareEmpty("e8");
+                    board.setSquare("c8", Piece.KING, Color.BLACK);
+                    board.setSquareEmpty("a8");
+                    board.setSquare("d8", Piece.ROOK, Color.BLACK);
+                }
+                board.setSquare(to, Piece.KING, sideToMove);
+                break;
+            case PROMOTION:
+                board.setSquareEmpty(from);
+                board.setSquare(to, Piece.QUEEN, sideToMove);
+                break;
+            case ORDINARY:
+                board.setSquareEmpty(from);
+                board.setSquare(to, move.piece, sideToMove);
+                break;
+        }
+
+
+        sideToMove = Color.getOppositeColor(sideToMove);
+        moveHistory.add(move);
+
+        // updating castling state
+        int moveNumber =  moveHistory.size()-1;
+        if(sideToMove == Color.WHITE) {
+
+            if(board.getPiece("a1") != Piece.ROOK ||
+                    board.getColor("a1") != Color.WHITE
+                    ) {
+                castlingState.whiteLong = false;
+                castlingState.whiteLongBreakingMove = moveNumber;
+            }
+
+            if(board.getPiece("h1") != Piece.ROOK ||
+                    board.getColor("h1") != Color.WHITE
+                    ) {
+                castlingState.whiteShort = false;
+                castlingState.whiteShortBreakingMove = moveNumber;
+            }
+
+            if(board.getPiece("e1") != Piece.KING ||
+                    board.getColor("e1") != Color.WHITE
+                    ) {
+                castlingState.whiteShort = false;
+                castlingState.whiteLong = false;
+                castlingState.whiteLongBreakingMove = moveNumber;
+                castlingState.whiteShortBreakingMove = moveNumber;
+            }
+        } else { // color == Color.BLACK
+
+            if(board.getPiece("a8") != Piece.ROOK ||
+                    board.getColor("a8") != Color.BLACK
+                    ) {
+                castlingState.blackLong = false;
+                castlingState.blackLongBreakingMove = moveNumber;
+            }
+
+            if(board.getPiece("h8") != Piece.ROOK ||
+                    board.getColor("h8") != Color.BLACK
+                    ) {
+                castlingState.blackShort = false;
+                castlingState.blackShortBreakingMove = moveNumber;
+            }
+
+            if(board.getPiece("e8") != Piece.KING ||
+                    board.getColor("e8") != Color.BLACK
+                    ) {
+                castlingState.blackShort = false;
+                castlingState.blackLong = false;
+                castlingState.blackShortBreakingMove = moveNumber;
+                castlingState.blackLongBreakingMove = moveNumber;
+            }
+        }
+    }
     
     public boolean makeMove(Square from, Square to) {
         if(from.isOut() || to.isOut()) {
@@ -268,108 +367,18 @@ public class Game {
         if(color != sideToMove) {
             return false;
         }
-        //Piece piece = board.getPiece(from);
-        
+
+
         ArrayList<Move> moveList = moveGenerator.generateAllMoves(color);
-//        System.out.println(moveList);
         for(Move move: moveList) {
             
             if(from.equals(move.firstSquare) && to.equals(move.secondSquare)) {
-                switch(move.type) {
-                    case SHORT_CASTLING:
-                        if(color == Color.WHITE) {
-                            board.setSquareEmpty("e1");
-                            board.setSquare("g1", Piece.KING, Color.WHITE);
-                            board.setSquareEmpty("h1");
-                            board.setSquare("f1", Piece.ROOK, Color.WHITE);
-                        } else { // color == Color.BLACK
-                            board.setSquareEmpty("e8");
-                            board.setSquare("g8", Piece.KING, Color.BLACK);
-                            board.setSquareEmpty("h8");
-                            board.setSquare("f8", Piece.ROOK, Color.BLACK);
-                        }
-                        board.setSquare(to, Piece.KING, color);
-                        break;
-                    case LONG_CASTLING:
-                        if(color == Color.WHITE) {
-                            board.setSquareEmpty("e1");
-                            board.setSquare("c1", Piece.KING, Color.WHITE);
-                            board.setSquareEmpty("a1");
-                            board.setSquare("d1", Piece.ROOK, Color.WHITE);
-                        } else { // color == Color.BLACK
-                            board.setSquareEmpty("e8");
-                            board.setSquare("c8", Piece.KING, Color.BLACK);
-                            board.setSquareEmpty("a8");
-                            board.setSquare("d8", Piece.ROOK, Color.BLACK);
-                        }
-                        board.setSquare(to, Piece.KING, color);
-                        break;
-                    case PROMOTION:
-                        board.setSquareEmpty(from);
-                        board.setSquare(to, Piece.QUEEN, color);
-                        break;
-                    case ORDINARY:
-                        board.setSquareEmpty(from);
-                        board.setSquare(to, move.piece, color);
-                        break;
+                makeMoveWithoutCheck(move);
+                Color oppositeSide = Color.getOppositeColor(sideToMove);
+                if(moveGenerator.isKingUnderAttack(oppositeSide)) {
+                    unmakeMove();
+                    return false;
                 }
-
-
-                sideToMove = Color.getOppositeColor(color);
-                moveHistory.add(move);
-
-                // updating castling state
-                int moveNumber =  moveHistory.size()-1;
-                if(color == Color.WHITE) {
-                    
-                    if(board.getPiece("a1") != Piece.ROOK || 
-                       board.getColor("a1") != Color.WHITE
-                    ) {
-                        castlingState.whiteLong = false;
-                        castlingState.whiteLongBreakingMove = moveNumber;
-                    }
-                    
-                    if(board.getPiece("h1") != Piece.ROOK || 
-                       board.getColor("h1") != Color.WHITE
-                    ) {
-                        castlingState.whiteShort = false;
-                        castlingState.whiteShortBreakingMove = moveNumber;
-                    }
-                    
-                    if(board.getPiece("e1") != Piece.KING || 
-                       board.getColor("e1") != Color.WHITE
-                    ) {
-                        castlingState.whiteShort = false;
-                        castlingState.whiteLong = false;
-                        castlingState.whiteLongBreakingMove = moveNumber;
-                        castlingState.whiteShortBreakingMove = moveNumber;
-                    }
-                } else { // color == Color.BLACK
-                
-                    if(board.getPiece("a8") != Piece.ROOK || 
-                       board.getColor("a8") != Color.BLACK
-                    ) {
-                        castlingState.blackLong = false;
-                        castlingState.blackLongBreakingMove = moveNumber;
-                    }
-                    
-                    if(board.getPiece("h8") != Piece.ROOK || 
-                       board.getColor("h8") != Color.BLACK
-                    ) {
-                        castlingState.blackShort = false;
-                        castlingState.blackShortBreakingMove = moveNumber;
-                    }
-                    
-                    if(board.getPiece("e8") != Piece.KING || 
-                       board.getColor("e8") != Color.BLACK
-                    ) {
-                        castlingState.blackShort = false;
-                        castlingState.blackLong = false;
-                        castlingState.blackShortBreakingMove = moveNumber;
-                        castlingState.blackLongBreakingMove = moveNumber;
-                    }
-                }
-                
                 return true;
             }
         }

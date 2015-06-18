@@ -57,51 +57,15 @@ public class MainActivity extends ActionBarActivity {
         });
 
 
-//        TableLayout table = (TableLayout) findViewById(R.id.table_chessboard);
-//        TableRow rowTest = new TableRow(this);
-//
-//        image = new ImageView(this);
-//        image.setImageResource(R.drawable.black_square);
-//        image.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                image.setImageResource(R.drawable.white_square);
-//            }
-//        });
-//
-//
-//        TableLayout table = (TableLayout) findViewById(R.id.table_chessboard);
-//        for(int i = 7;i>=0;i--) {
-//            TableRow rowTest = new TableRow(this);
-//            for(int j = 0;j<8;j++) {
-//                if((i+j) % 2 == 0) {
-//                    ImageView imageBlackSquare = new ImageView(this);
-//                    imageBlackSquare.setImageResource(R.drawable.black_square);
-//                    rowTest.addView(imageBlackSquare);
-//                } else {
-//                    ImageView imageWhiteSquare = new ImageView(this);
-//                    imageWhiteSquare.setImageResource(R.drawable.white_square);
-//                    rowTest.addView(imageWhiteSquare);
-//                }
-//            }
-//            table.addView(rowTest);
-//        }
+
 
         TableLayout table = (TableLayout) findViewById(R.id.table_chessboard);
         for(int i = 7;i>=0;i--) {
             TableRow rowTest = new TableRow(this);
             for(int j = 0;j<8;j++) {
-//                ImageView imageBlackSquare = new ImageView(this);
-//                imageBlackSquare.setImageResource(R.drawable.black_square);
-//                rowTest.addView(imageBlackSquare);
-
                 MyImageView myImage = new MyImageView(this, i, j);
                 rowTest.addView(myImage);
-//                squareMap.put(new Square(i, j), myImage);
                 squareImageArray[i][j] = myImage;
-
-//                DrawView view = new DrawView(this, i, j);
-//                rowTest.addView(imageBlackSquare);
             }
             table.addView(rowTest);
         }
@@ -207,31 +171,16 @@ public class MainActivity extends ActionBarActivity {
             super.onDraw(canvas);
 
             resetImage();
-//            System.out.println("i = "+i+", j = "+j+" | "+"iSel = "+iSelected+", jSel = "+jSelected);
 
             if(this == selectedSquare) {
                 canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), p);
             }
-
-//            Paint p = new Paint();
-//            p.setColor(Color.RED);
-//            p.setStrokeWidth(10);
-//            p.setStyle(Paint.Style.STROKE);
-//            canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), p);
-
-//            ImageView imageBlackSquare = new ImageView(this);
-//            imageBlackSquare.setImageResource(R.drawable.black_square);
-//            rowTest.addView(imageBlackSquare);
-            //Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-            //canvas.drawLine(0, 0, 20, 20, p);
-
         }
 
         private void resetImage() {
             String squareColor;
             if((i+j)%2 == 0) {
                 squareColor = "black";
-
             } else {
                 squareColor = "white";
             }
@@ -244,11 +193,8 @@ public class MainActivity extends ActionBarActivity {
                 name += "_" + color.fullString + "_" + piece.fullString;
             }
 
-
-
             int resId=MainActivity.this.getResources().getIdentifier(name, "drawable", MainActivity.this.getPackageName());
 
-//            System.out.println(name + " resId = " + resId);
             this.setImageResource(resId);
         }
 
