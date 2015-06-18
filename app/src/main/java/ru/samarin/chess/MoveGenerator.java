@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class MoveGenerator {
     private Board board;
-    Game.CastlingState castlingState;
+    private Game.CastlingState castlingState;
     private static final int n = 8;
     private static final Piece[] promotionPieces = {Piece.QUEEN, Piece.KNIGHT, Piece.BISHOP, Piece.ROOK};
     
@@ -264,7 +264,7 @@ public class MoveGenerator {
  
  
     private void addKnightMoves(ArrayList<Move> moveList, Square square, Color color) {
-        ArrayList<Square> squareList = new ArrayList<Square>();
+        ArrayList<Square> squareList = new ArrayList<>();
         
         squareList.add(square.goUp().goUp().goRight());
         squareList.add(square.goUp().goUp().goLeft());
@@ -283,12 +283,12 @@ public class MoveGenerator {
 
 
     private void addBishopMoves(ArrayList<Move> moveList, Square square, Color color) {
-        ArrayList<Square> squareList = new ArrayList<Square>();
-        addBishopSquares(squareList, square, color);
+        ArrayList<Square> squareList = new ArrayList<>();
+        addBishopSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.BISHOP, square, squareList, color);
     }
     
-    private void addBishopSquares(ArrayList<Square> squareList, Square square, Color color) {
+    private void addBishopSquares(ArrayList<Square> squareList, Square square) {
         Square sq;
 
         sq = new Square(square);
@@ -318,12 +318,12 @@ public class MoveGenerator {
     
     
     private void addRookMoves(ArrayList<Move> moveList, Square square, Color color) {
-        ArrayList<Square> squareList = new ArrayList<Square>();
-        addRookSquares(squareList, square, color);
+        ArrayList<Square> squareList = new ArrayList<>();
+        addRookSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.ROOK, square, squareList, color);
     }
     
-    private void addRookSquares(ArrayList<Square> squareList, Square square, Color color) {
+    private void addRookSquares(ArrayList<Square> squareList, Square square) {
         Square sq;
 
         sq = new Square(square);
@@ -352,9 +352,9 @@ public class MoveGenerator {
     }
     
     private void addQueenMoves(ArrayList<Move> moveList, Square square, Color color) {
-        ArrayList<Square> squareList = new ArrayList<Square>();
-        addRookSquares(squareList, square, color);
-        addBishopSquares(squareList, square, color);
+        ArrayList<Square> squareList = new ArrayList<>();
+        addRookSquares(squareList, square);
+        addBishopSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.QUEEN, square, squareList, color);
     }
     
@@ -362,7 +362,7 @@ public class MoveGenerator {
                                    ArrayList<Square> secondList, Color color) {
                                        
         for(Square item: secondList) {
-            if(item.isOut() == false) {
+            if(!item.isOut()) {
                 Color secondColor = board.getColor(item);
                 if(secondColor == Color.NONE) {
                     // Пустое поле

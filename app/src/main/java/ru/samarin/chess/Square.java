@@ -37,7 +37,7 @@ public class Square {
             flag = false;
         }
         
-        if(flag == false) {
+        if(!flag) {
             throw new RuntimeException("Invalid string argument for class Square constructor");
         }
     }
@@ -45,11 +45,7 @@ public class Square {
 
 
     boolean equals(Square square) {
-        if(i == square.i && j == square.j) {
-            return true;
-        } else {
-            return false;
-        }
+        return i == square.i && j == square.j;
     }
     
     
@@ -71,11 +67,8 @@ public class Square {
     
     
     public boolean isOut() {
-        if(i<0 || n<=i || j<0 || n<=j) {
-            return true;
-        }
-        
-        return false;
+        return i < 0 || n <= i || j < 0 || n <= j;
+
     }
     
     public Square goRight() {

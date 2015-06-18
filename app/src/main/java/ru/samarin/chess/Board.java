@@ -1,9 +1,8 @@
 package ru.samarin.chess;
-import java.util.ArrayList;
 
 
 public class Board {
-    public static final int n = 8; //board size
+    private static final int n = 8; //board size
     
     private Color[][] colors = new Color[n][n];
     private Piece[][] pieces = new Piece[n][n];
@@ -55,31 +54,33 @@ public class Board {
         return colors[sq.i][sq.j];
     }
     
-    public void print() {
-        System.out.println("Board colors:");
-        for(int i = n-1;i >= 0;i--) {
-            for(int j = 0;j < n;j++) {
-                String s = ".";
-                Color c = colors[i][j];
-                if(c == Color.WHITE) {
-                    s = "w";
-                } else if(c == Color.BLACK){
-                    s = "b";
-                }
-                System.out.printf("%s ", s);
-            }
-            System.out.printf("\n");
-        }
-        
-        System.out.println("Board pieces:");
-        for(int i = n-1;i >= 0;i--) {
-            for(int j = 0;j < n;j++) {
-                System.out.printf("%s ", pieces[i][j].string);
-            }
-            System.out.printf("\n");
-        }
-    }
-    
+// --Commented out by Inspection START (18.06.2015 14:32):
+//    public void print() {
+//        System.out.println("Board colors:");
+//        for(int i = n-1;i >= 0;i--) {
+//            for(int j = 0;j < n;j++) {
+//                String s = ".";
+//                Color c = colors[i][j];
+//                if(c == Color.WHITE) {
+//                    s = "w";
+//                } else if(c == Color.BLACK){
+//                    s = "b";
+//                }
+//                System.out.printf("%s ", s);
+//            }
+//            System.out.printf("\n");
+//        }
+//
+//        System.out.println("Board pieces:");
+//        for(int i = n-1;i >= 0;i--) {
+//            for(int j = 0;j < n;j++) {
+//                System.out.printf("%s ", pieces[i][j].string);
+//            }
+//            System.out.printf("\n");
+//        }
+//    }
+// --Commented out by Inspection STOP (18.06.2015 14:32)
+
     
     
 }

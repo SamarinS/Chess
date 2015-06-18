@@ -2,7 +2,6 @@ package ru.samarin.chess;
 
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Game {
     private Board board;
@@ -155,7 +154,7 @@ public class Game {
     }
 
     public boolean hasPositionChanged() {
-        return (moveHistory.isEmpty() == false);
+        return !moveHistory.isEmpty();
     }
     
     public void setTestPosition() {
@@ -242,7 +241,6 @@ public class Game {
             case ORDINARY:
             case PROMOTION:
                 board.setSquare(move.firstSquare, move.piece, sideToMove);
-                Piece capturedPiece;
                 if(move.isCapture) {
                     board.setSquare(move.secondSquare, move.capturedPiece, Color.getOppositeColor(sideToMove));
                 } else {

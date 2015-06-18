@@ -1,7 +1,6 @@
 package ru.samarin.chess;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Bundle;
@@ -16,20 +15,15 @@ import android.widget.TableRow;
 import android.app.AlertDialog;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeMap;
-
 public class MainActivity extends ActionBarActivity {
 
-    Game game;
+    private Game game;
 
-    MyImageView selectedSquare;
-    TextView gameStatusText;
-    boolean selectedInvalidSquare = true;
+    private MyImageView selectedSquare;
+    private TextView gameStatusText;
 
-    MyImageView[][] squareImageArray = new  MyImageView[8][8];
-    Button unmakeMoveButton;
+    private MyImageView[][] squareImageArray = new  MyImageView[8][8];
+    private Button unmakeMoveButton;
 
 
     @Override
@@ -51,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
         unmakeMoveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean flag = MainActivity.this.game.unmakeMove();
+                MainActivity.this.game.unmakeMove();
                 onGameStateChanged();
             }
         });
@@ -116,13 +110,12 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void tryMakeMove(Square from, Square to) {
-        ArrayList<Square> changedSquares = new ArrayList<Square>();
         boolean flag = game.makeMove(from, to);
         if (!flag) {
             if (game.getColor(from) == game.getSideToMove() &&
                     game.getColor(to) != game.getSideToMove()
             ) {
-                new AlertDialog.Builder(MainActivity.this)/*.setTitle("Argh")*/.setMessage("Невозможный ход!").setNeutralButton("Закрыть", null).show();
+                new AlertDialog.Builder(MainActivity.this).setMessage("Невозможный ход!").setNeutralButton("Закрыть", null).show();
             }
         }
         onGameStateChanged();
