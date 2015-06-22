@@ -24,28 +24,36 @@ public class Square {
     }
     
     public Square(String s) {
-        boolean flag = true;
-        if(s.length() != 2) {
-            flag = false;
-        }
-        
-        
-        j = chessLetters.indexOf(s.charAt(0));
-        i = chessDigits.indexOf(s.charAt(1));
-        
-        if( (i == -1) || (j == -1) ) {
-            flag = false;
-        }
-        
-        if(!flag) {
+        Square sq = parse(s);
+        if(sq == null) {
             throw new RuntimeException("Invalid string argument for class Square constructor");
         }
+        this.i = sq.i;
+        this.j = sq.j;
     }
 
 
 
-    boolean equals(Square square) {
+    public boolean equals(Square square) {
         return i == square.i && j == square.j;
+    }
+
+    public boolean equals(String s) {
+        return equals(new Square(s));
+    }
+
+    public static Square parse(String s) {
+        if(s.length() != 2) {
+            return null;
+        }
+
+        int j = chessLetters.indexOf(s.charAt(0));
+        int i = chessDigits.indexOf(s.charAt(1));
+        if( (i == -1) || (j == -1) ) {
+            return null;
+        }
+
+        return new Square(i, j);
     }
     
     

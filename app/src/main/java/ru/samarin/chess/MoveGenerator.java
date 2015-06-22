@@ -1,6 +1,8 @@
 package ru.samarin.chess;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class MoveGenerator {
     private Board board;
@@ -15,12 +17,12 @@ public class MoveGenerator {
     }
 
 
-    public boolean isKingUnderAttack(Color color) {
+    public boolean isKingUnderAttack(Color color, Board board) {
         Color sideToMove = Color.getOppositeColor(color);
-        ArrayList<Move> moveList = generateAllMoves(sideToMove);
+        AbstractList<Move> moveList = generateAllMoves(sideToMove);
         for(Move move: moveList) {
             if(move.isCapture &&
-               move.capturedPiece == Piece.KING
+               board.getPiece(move.secondSquare) == Piece.KING
             ) {
                 return true;
             }
@@ -29,12 +31,12 @@ public class MoveGenerator {
     }
     
     
-    public ArrayList<Move> generateAllMoves(Color color) {
+    public Stack<Move> generateAllMoves(Color color) {
         if(color == Color.NONE) {
             throw new RuntimeException("Argument color is NONE");
         }
         
-        ArrayList<Move> moveList = new ArrayList<Move>();
+        Stack<Move> moveList = new Stack<>();
         
         for(int i = 0;i<n;i++) {
             for(int j = 0;j<n;j++) {
@@ -76,7 +78,7 @@ public class MoveGenerator {
         return moveList;
     }
 
-    private void addWhitePawnMoves(ArrayList<Move> moveList, Square sq) {
+    private void addWhitePawnMoves(AbstractList<Move> moveList, Square sq) {
         Square to;
 
         // Ход с начальной позиции на два поля вперед
@@ -109,15 +111,14 @@ public class MoveGenerator {
         to = sq.goUp().goRight();
         if(!sq.isNearRightBorder() && board.getColor(to) == Color.BLACK)
         {
-            Piece capturedPiece = board.getPiece(to);
             // Promotion
             if(sq.i==6) {
                 for(Piece item: promotionPieces) {
-                    Move move = Move.getPromotionWithCaptureMove(sq, to, item, capturedPiece);
+                    Move move = Move.getPromotionWithCaptureMove(sq, to, item);
                     moveList.add(move);
                 }
             } else { // Обычное взятие
-                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to, capturedPiece);
+                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to);
                 moveList.add(move);
             }
         }
@@ -126,21 +127,20 @@ public class MoveGenerator {
         to = sq.goUp().goLeft();
         if(!sq.isNearLeftBorder() && board.getColor(to) == Color.BLACK)
         {
-            Piece capturedPiece = board.getPiece(to);
             // Promotion
             if(sq.i==6) {
                 for(Piece item: promotionPieces) {
-                    Move move = Move.getPromotionWithCaptureMove(sq, to, item, capturedPiece);
+                    Move move = Move.getPromotionWithCaptureMove(sq, to, item);
                     moveList.add(move);
                 }
             } else { // Обычное взятие
-                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to, capturedPiece);
+                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to);
                 moveList.add(move);
             }
         }
     }
     
-    private void addBlackPawnMoves(ArrayList<Move> moveList, Square sq) {
+    private void addBlackPawnMoves(AbstractList<Move> moveList, Square sq) {
         Square to;
 
         // Ход с начальной позиции на два поля вперед
@@ -174,15 +174,15 @@ public class MoveGenerator {
         to = sq.goDown().goRight();
         if(!sq.isNearRightBorder() && board.getColor(to) == Color.WHITE)
         {
-            Piece capturedPiece = board.getPiece(to);
             // Promotion
             if(sq.i==1) {
                 for(Piece item: promotionPieces) {
-                    Move move = Move.getPromotionWithCaptureMove(sq, to, item, capturedPiece);
+                    Move move = Move.getPromotionWithCaptureMove(sq, to, item);
                     moveList.add(move);
+
                 }
             } else { // Обычное взятие
-                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to, capturedPiece);
+                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to);
                 moveList.add(move);
             }
         }
@@ -191,22 +191,21 @@ public class MoveGenerator {
         to = sq.goDown().goLeft();
         if(!sq.isNearLeftBorder() && board.getColor(to) == Color.WHITE)
         {
-            Piece capturedPiece = board.getPiece(to);
             // Promotion
             if(sq.i==1) {
                 for(Piece item: promotionPieces) {
-                    Move move = Move.getPromotionWithCaptureMove(sq, to, item, capturedPiece);
+                    Move move = Move.getPromotionWithCaptureMove(sq, to, item);
                     moveList.add(move);
                 }
             } else { // Обычное взятие
-                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to, capturedPiece);
+                Move move = Move.getOrdinaryCaptureMove(Piece.PAWN, sq, to);
                 moveList.add(move);
             }
         }
     }
     
     
-    private void addKingMoves(ArrayList<Move> moveList, Square square, Color color) {
+    private void addKingMoves(AbstractList<Move> moveList, Square square, Color color) {
         ArrayList<Square> squareList = new ArrayList<Square>();
         
         squareList.add(square.goUp().goLeft());
@@ -224,14 +223,14 @@ public class MoveGenerator {
     }
     
     
-    private void addCastlingMoves(ArrayList<Move> moveList, Color color) {
+    private void addCastlingMoves(AbstractList<Move> moveList, Color color) {
         if(color == Color.WHITE) {
             if(castlingState.isWhiteLongAllowed() && 
                 board.getColor("b1") == Color.NONE &&
                 board.getColor("c1") == Color.NONE &&
                 board.getColor("d1") == Color.NONE
             ) {
-                Move move = Move.getLongCastlingMove(color);
+                Move move = Move.getLongCastlingMove();
                 moveList.add(move);
             }
             
@@ -239,7 +238,7 @@ public class MoveGenerator {
                 board.getColor("f1") == Color.NONE &&
                 board.getColor("g1") == Color.NONE
             ) {
-                Move move = Move.getShortCastlingMove(color);
+                Move move = Move.getShortCastlingMove();
                 moveList.add(move);
             }
         } else {
@@ -248,7 +247,7 @@ public class MoveGenerator {
                 board.getColor("c8") == Color.NONE &&
                 board.getColor("d8") == Color.NONE
             ) {
-                Move move = Move.getLongCastlingMove(color);
+                Move move = Move.getLongCastlingMove();
                 moveList.add(move);
             }
             
@@ -256,14 +255,14 @@ public class MoveGenerator {
                 board.getColor("f8") == Color.NONE &&
                 board.getColor("g8") == Color.NONE
             ) {
-                Move move = Move.getShortCastlingMove(color);
+                Move move = Move.getShortCastlingMove();
                 moveList.add(move);
             }
         }
     }
  
  
-    private void addKnightMoves(ArrayList<Move> moveList, Square square, Color color) {
+    private void addKnightMoves(AbstractList<Move> moveList, Square square, Color color) {
         ArrayList<Square> squareList = new ArrayList<>();
         
         squareList.add(square.goUp().goUp().goRight());
@@ -282,13 +281,13 @@ public class MoveGenerator {
     }
 
 
-    private void addBishopMoves(ArrayList<Move> moveList, Square square, Color color) {
+    private void addBishopMoves(AbstractList<Move> moveList, Square square, Color color) {
         ArrayList<Square> squareList = new ArrayList<>();
         addBishopSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.BISHOP, square, squareList, color);
     }
     
-    private void addBishopSquares(ArrayList<Square> squareList, Square square) {
+    private void addBishopSquares(AbstractList<Square> squareList, Square square) {
         Square sq;
 
         sq = new Square(square);
@@ -317,13 +316,13 @@ public class MoveGenerator {
     }
     
     
-    private void addRookMoves(ArrayList<Move> moveList, Square square, Color color) {
+    private void addRookMoves(AbstractList<Move> moveList, Square square, Color color) {
         ArrayList<Square> squareList = new ArrayList<>();
         addRookSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.ROOK, square, squareList, color);
     }
     
-    private void addRookSquares(ArrayList<Square> squareList, Square square) {
+    private void addRookSquares(AbstractList<Square> squareList, Square square) {
         Square sq;
 
         sq = new Square(square);
@@ -351,14 +350,14 @@ public class MoveGenerator {
         } while(!sq.isOut() && board.getColor(sq) == Color.NONE);
     }
     
-    private void addQueenMoves(ArrayList<Move> moveList, Square square, Color color) {
+    private void addQueenMoves(AbstractList<Move> moveList, Square square, Color color) {
         ArrayList<Square> squareList = new ArrayList<>();
         addRookSquares(squareList, square);
         addBishopSquares(squareList, square);
         tryAddFigureMoves(moveList, Piece.QUEEN, square, squareList, color);
     }
     
-    private void tryAddFigureMoves(ArrayList<Move> moveList, Piece piece, Square first, 
+    private void tryAddFigureMoves(AbstractList<Move> moveList, Piece piece, Square first,
                                    ArrayList<Square> secondList, Color color) {
                                        
         for(Square item: secondList) {
@@ -370,8 +369,7 @@ public class MoveGenerator {
                     moveList.add(move);
                 } else if(secondColor != color) {
                     // Capture
-                    Piece capturedPiece = board.getPiece(item);
-                    Move move = Move.getOrdinaryCaptureMove(piece, first, item, capturedPiece);
+                    Move move = Move.getOrdinaryCaptureMove(piece, first, item);
                     moveList.add(move);
                 }
             }

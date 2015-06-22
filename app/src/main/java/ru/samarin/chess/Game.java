@@ -1,7 +1,11 @@
 package ru.samarin.chess;
 
 
+import android.util.Log;
+
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class Game {
     public enum State {
@@ -13,7 +17,8 @@ public class Game {
     private Color sideToMove;
     private MoveGenerator moveGenerator;
     private CastlingState castlingState;
-    private ArrayList<Move> moveHistory;
+    private Stack<Move> moveHistory;
+    private Stack<Piece> capturedPieceHistory;
 
     
     public class CastlingState {
@@ -127,26 +132,15 @@ public class Game {
         state = State.PROCESS;
         board = new Board();
         castlingState = new CastlingState();
+        capturedPieceHistory = new Stack<>();
         moveGenerator = new MoveGenerator(board, castlingState);
-        moveHistory = new ArrayList<Move>();
-        
-        
-        
-        //board.setSquare("b2", Piece.PAWN, Color.BLACK);
-        //board.setSquare("a1", Piece.BISHOP, Color.WHITE);
-        //board.setSquare("c1", Piece.ROOK, Color.WHITE);
-        //board.setSquare("b3", Piece.ROOK, Color.BLACK);
-        //board.setSquare("c2", Piece.PAWN, Color.WHITE);
-        //board.setSquare("b4", Piece.PAWN, Color.WHITE);
-        
-        //board.setSquare("g7", Piece.PAWN, Color.BLACK);
-        //board.setSquare("g4", Piece.QUEEN, Color.BLACK);
-        //board.setSquare("h5", Piece.KING, Color.WHITE);
-        //board.setSquare("h4", Piece.BISHOP, Color.WHITE);
-        
-        //board.setSquare("d2", Piece.KNIGHT, Color.BLACK);
-        //board.setSquare("g2", Piece.PAWN, Color.BLACK);
-        
+        moveHistory = new Stack<>();
+
+//        //======test============
+//        String[] moveStrings = {"0-0-0", "0-0", "a3:b4", "a2-a4", "f7:g8Q", "d7-d8Q", "Rf4-b4", "Ba3:c5"};
+//        for(String s: moveStrings) {
+//            Log.d("GAME", s + " - " + Move.parse(s));
+//        }
     }
 
     public Color getSideToMove() {
@@ -159,6 +153,23 @@ public class Game {
 
     public boolean hasPositionChanged() {
         return !moveHistory.isEmpty();
+    }
+
+    public ArrayList<String> getMoveHistory() {
+        ArrayList<String> moveStrings = new ArrayList<>();
+        for(Move move: moveHistory) {
+            moveStrings.add(move.toString());
+        }
+        return moveStrings;
+    }
+
+    public void setPosition(ArrayList<String> moveHistory) {
+        setInitialPosition();
+        for(String s: moveHistory) {
+            Move move = Move.parse(s);
+            makeMove(move);
+        }
+        updateState();
     }
     
     public void setTestPosition() {
@@ -213,6 +224,8 @@ public class Game {
         board.setSquare("h8", Piece.ROOK, Color.BLACK);
     }
 
+
+
     public boolean unmakeMove() {
         if(moveHistory.isEmpty()) {
             return false;
@@ -220,9 +233,7 @@ public class Game {
 
         sideToMove = Color.getOppositeColor(sideToMove);
 
-        int lastIndex = moveHistory.size()-1;
-        Move move = moveHistory.get(lastIndex);
-        moveHistory.remove(lastIndex);
+        Move move = moveHistory.pop();
 
         switch(move.type) {
             case SHORT_CASTLING:
@@ -255,7 +266,8 @@ public class Game {
             case PROMOTION:
                 board.setSquare(move.firstSquare, move.piece, sideToMove);
                 if(move.isCapture) {
-                    board.setSquare(move.secondSquare, move.capturedPiece, Color.getOppositeColor(sideToMove));
+                    Piece capturedPiece = capturedPieceHistory.pop();
+                    board.setSquare(move.secondSquare, capturedPiece, Color.getOppositeColor(sideToMove));
                 } else {
                     board.setSquare(move.secondSquare, Piece.NONE, Color.NONE);
                 }
@@ -271,7 +283,14 @@ public class Game {
         return true;
     }
 
-    private void makeMoveWithoutCheck(Move move) {
+    private void makeMove(Move move) {
+
+        moveHistory.push(move);
+        if(move.isCapture) {
+            Piece capturedPiece = board.getPiece(move.secondSquare);
+            capturedPieceHistory.push(capturedPiece);
+        }
+
         Square from = move.firstSquare;
         Square to = move.secondSquare;
         switch(move.type) {
@@ -287,7 +306,6 @@ public class Game {
                     board.setSquareEmpty("h8");
                     board.setSquare("f8", Piece.ROOK, Color.BLACK);
                 }
-                board.setSquare(to, Piece.KING, sideToMove);
                 break;
             case LONG_CASTLING:
                 if(sideToMove == Color.WHITE) {
@@ -301,7 +319,6 @@ public class Game {
                     board.setSquareEmpty("a8");
                     board.setSquare("d8", Piece.ROOK, Color.BLACK);
                 }
-                board.setSquare(to, Piece.KING, sideToMove);
                 break;
             case PROMOTION:
                 board.setSquareEmpty(from);
@@ -314,8 +331,9 @@ public class Game {
         }
 
 
+        // updating sideToMove
         sideToMove = Color.getOppositeColor(sideToMove);
-        moveHistory.add(move);
+
 
         // updating castling state
         int moveNumber =  moveHistory.size()-1;
@@ -370,7 +388,7 @@ public class Game {
         }
     }
     
-    public boolean makeMove(Square from, Square to) {
+    public boolean verifyAndMakeMove(Square from, Square to) {
         if(from.isOut() || to.isOut()) {
             throw new RuntimeException("<from> or <to> square is out of the board");
         }
@@ -385,27 +403,18 @@ public class Game {
         }
 
 
-        ArrayList<Move> moveList = moveGenerator.generateAllMoves(color);
+        Stack<Move> moveList = moveGenerator.generateAllMoves(color);
         for(Move move: moveList) {
-            
-            if(from.equals(move.firstSquare) && to.equals(move.secondSquare)) {
-                makeMoveWithoutCheck(move);
+            if(move.equals(from, to, sideToMove)) {
+                makeMove(move);
                 Color oppositeSide = Color.getOppositeColor(sideToMove);
-                if(moveGenerator.isKingUnderAttack(oppositeSide)) {
+                if(moveGenerator.isKingUnderAttack(oppositeSide, board)) {
                     unmakeMove();
                     return false;
                 }
 
                 // detecting checkmate and stalemate
-                if(!isTherePossibleMove()) {
-                    if(moveGenerator.isKingUnderAttack(sideToMove)) {
-                        // mate
-                        state = State.WIN;
-                    } else {
-                        // stalemate
-                        state = State.DRAW;
-                    }
-                }
+                updateState();
 
                 return true;
             }
@@ -414,12 +423,25 @@ public class Game {
         return false;
     }
 
+    private void updateState() {
+        if(!isTherePossibleMove()) {
+            if(moveGenerator.isKingUnderAttack(sideToMove, board)) {
+                // mate
+                state = State.WIN;
+            } else {
+                // stalemate
+                state = State.DRAW;
+            }
+        }
+    }
+
     private boolean isTherePossibleMove() {
-        ArrayList<Move> moveList = moveGenerator.generateAllMoves(sideToMove);
+        AbstractList<Move> moveList = moveGenerator.generateAllMoves(sideToMove);
         boolean flag = false;
         for(Move move: moveList) {
-            makeMoveWithoutCheck(move);
-            if(!moveGenerator.isKingUnderAttack(Color.getOppositeColor(sideToMove))) {
+            makeMove(move);
+            Color oppositeSide = Color.getOppositeColor(sideToMove);
+            if(!moveGenerator.isKingUnderAttack(oppositeSide, board)) {
                flag = true;
             }
             unmakeMove();

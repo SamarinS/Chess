@@ -1,10 +1,12 @@
 package ru.samarin.chess;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +17,9 @@ import android.widget.TableRow;
 import android.app.AlertDialog;
 import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity {
+import java.util.ArrayList;
+
+public class MainActivity extends Activity {
 
     private Game game;
 
@@ -32,8 +36,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         game = new Game();
-//        game.setInitialPosition();
-        game.setTestPosition();
+        game.setInitialPosition();
+//        game.setTestPosition();
 
         gameStatusLabel = (TextView) findViewById(R.id.game_status_text);
 
@@ -68,6 +72,20 @@ public class MainActivity extends ActionBarActivity {
         onGameStateChanged();
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        ArrayList<String> moveHistory = savedInstanceState.getStringArrayList("moveHistory");
+        game.setPosition(moveHistory);
+        onGameStateChanged();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        ArrayList<String> moveHistory = game.getMoveHistory();
+        outState.putStringArrayList("moveHistory", moveHistory);
+    }
 
     private void onGameStateChanged() {
         String gameStatusText = "";
@@ -105,34 +123,9 @@ public class MainActivity extends ActionBarActivity {
         unmakeMoveButton.setEnabled(game.hasPositionChanged());
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-//    private void setGameStatusText() {
-//
-//    }
 
     private void tryMakeMove(Square from, Square to) {
-        boolean flag = game.makeMove(from, to);
+        boolean flag = game.verifyAndMakeMove(from, to);
         if (!flag) {
             if (game.getColor(from) == game.getSideToMove() &&
                     game.getColor(to) != game.getSideToMove()
