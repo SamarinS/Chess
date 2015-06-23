@@ -1,14 +1,16 @@
 package ru.samarin.chess;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,10 +18,16 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.app.AlertDialog;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends Activity {
+
+    final String TAG = "MAIN_ACTIVITY";
+    final int SAVE_GAME_CODE = 1;
+    final int LOAD_GAME_CODE = 2;
 
     private Game game;
 
@@ -28,6 +36,8 @@ public class MainActivity extends Activity {
 
     private MyImageView[][] squareImageArray = new  MyImageView[8][8];
     private Button unmakeMoveButton;
+
+    DBHelper dbHelper;
 
 
     @Override
@@ -41,8 +51,10 @@ public class MainActivity extends Activity {
 
         gameStatusLabel = (TextView) findViewById(R.id.game_status_text);
 
-
         selectedSquare = null;
+
+        dbHelper = new DBHelper(this);
+
 
 
         unmakeMoveButton = (Button) findViewById(R.id.unmakeMoveButton);
@@ -55,6 +67,24 @@ public class MainActivity extends Activity {
         });
 
 
+        Button loadGameButton = (Button) findViewById(R.id.loadGameButton);
+        loadGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, LoadGameActivity.class);
+                startActivityForResult(intent, LOAD_GAME_CODE);
+            }
+        });
+
+
+        Button saveGameButton = (Button) findViewById(R.id.saveGameButton);
+        saveGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SaveGameActivity.class);
+                startActivityForResult(intent, SAVE_GAME_CODE);
+            }
+        });
 
 
         TableLayout table = (TableLayout) findViewById(R.id.table_chessboard);
@@ -70,6 +100,65 @@ public class MainActivity extends Activity {
 
 
         onGameStateChanged();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(data==null) {
+            return;
+        }
+
+        switch(requestCode) {
+            case SAVE_GAME_CODE:
+                String gameName = data.getStringExtra("gameName");
+                saveGame(gameName);
+                break;
+            case LOAD_GAME_CODE:
+                int id = data.getIntExtra("id", -1);
+//                Toast toast = Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT);
+//                toast.show();
+                loadGame(id);
+                break;
+        }
+    }
+
+
+    private void loadGame(int id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String selection = "id = " + String.valueOf(id);
+        String[] columns = {"move_history"};
+        Cursor cursor = db.query("saved_games", columns, selection, null, null, null, null);
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex("move_history");
+        String moveHistoryString = cursor.getString(columnIndex);
+//        Log.d(TAG, moveHistoryString);
+        db.close();
+
+
+        String [] moveStringArray = moveHistoryString.split("[\\s]");
+        ArrayList<String> moveStringArrayList = new ArrayList<>(Arrays.asList(moveStringArray));
+        game.setPosition(moveStringArrayList);
+        onGameStateChanged();
+    }
+
+
+    private void saveGame(String gameName) {
+        ArrayList<String> moveHistory = game.getMoveHistory();
+        String moveHistoryString = "";
+        for(String moveString: moveHistory) {
+            moveHistoryString += moveString + " ";
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put("name", gameName);
+        cv.put("move_history", moveHistoryString);
+
+        long rowID = db.insert("saved_games", null, cv);
+        Log.d(TAG, "row inserted, ID = " + rowID +
+                ", name = " + gameName +
+                ", moveHistory = " + moveHistoryString);
     }
 
     @Override
@@ -210,5 +299,27 @@ public class MainActivity extends Activity {
             this.setImageResource(resId);
         }
 
+    }
+
+
+    class DBHelper extends SQLiteOpenHelper {
+        public DBHelper(Context context) {
+            super(context, "ChessDB", null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            Log.d(TAG, "Creating database");
+            db.execSQL("create table saved_games ("
+                    + "id integer primary key autoincrement,"
+                    + "name text,"
+                    + "move_history text" + ");");
+        }
+
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
     }
 }

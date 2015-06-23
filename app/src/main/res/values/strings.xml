@@ -3,4 +3,6 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_load_game">LoadGameActivity</string>
+    <string name="title_activity_save_game">SaveGameActivity</string>
 </resources>

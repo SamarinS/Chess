@@ -7,6 +7,7 @@
 
 
     <TableLayout
+        android:layout_marginLeft="20dp"
         android:id="@+id/table_chessboard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,6 +34,22 @@
             android:id="@+id/unmakeMoveButton"
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Сохранить игру"
+            android:id="@+id/saveGameButton"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="1dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Загрузить игру"
+            android:id="@+id/loadGameButton"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="1dp" />
 
     </LinearLayout>
 
