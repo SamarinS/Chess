@@ -87,6 +87,17 @@ public class MainActivity extends Activity {
         });
 
 
+        Button showMoveHistoryButton = (Button) findViewById(R.id.showMoveHistoryButton);
+        showMoveHistoryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MoveHistoryActivity.class);
+                intent.putStringArrayListExtra("moveHistoryArrayList", game.getMoveHistory());
+                startActivity(intent);
+            }
+        });
+
+
         TableLayout table = (TableLayout) findViewById(R.id.table_chessboard);
         for(int i = 7;i>=0;i--) {
             TableRow rowTest = new TableRow(this);

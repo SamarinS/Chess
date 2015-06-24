@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -24,13 +25,19 @@ public class LoadGameActivity extends Activity {
     final String TAG = "LOAD_GAME_ACTIVITY";
     ArrayAdapter<String> adapter;
     ArrayList<Integer> adapterIDs;
+    DBHelper dbHelper;
+    ListView lv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load_game);
 
+        // database
+        dbHelper = new DBHelper(this);
 
-        ListView lv = (ListView) findViewById(R.id.listView);
+        // listView initialize
+        lv = (ListView) findViewById(R.id.listView);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
            @Override
            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -48,13 +55,28 @@ public class LoadGameActivity extends Activity {
             adapter.add(s);
         }
         lv.setAdapter(adapter);
+
+
+        //Clear button
+        Button buttonClear = (Button) findViewById(R.id.buttonClear);
+        buttonClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                db.delete("saved_games", null, null);
+                dbHelper.close();
+
+                adapter.clear();
+                lv.setAdapter(adapter);
+            }
+        });
     }
 
     private ArrayList<String> getNames() {
         ArrayList<String> names = new ArrayList<>();
         adapterIDs = new ArrayList<>();
 
-        DBHelper dbHelper = new DBHelper(this);
+
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor cursor = db.query("saved_games", null, null, null, null, null, null);
 

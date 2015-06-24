@@ -3,20 +3,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/buttonClear"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Удалить все"/>
-
     <ListView
-        android:id="@+id/listView"
+        android:id="@+id/listView_moveHistory"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
     </ListView>
-
-
-
 
 </LinearLayout>

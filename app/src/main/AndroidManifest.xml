@@ -24,6 +24,10 @@
             android:name=".SaveGameActivity"
             android:label="@string/title_activity_save_game" >
         </activity>
+        <activity
+            android:name=".MoveHistoryActivity"
+            android:label="@string/title_activity_move_history" >
+        </activity>
     </application>
 
 </manifest>

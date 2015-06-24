@@ -26,10 +26,15 @@ public class SaveGameActivity extends Activity {
         button_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.putExtra("gameName", editText.getText().toString());
-                setResult(RESULT_OK, intent);
-                finish();
+                String gameName = editText.getText().toString();
+                if(gameName.isEmpty()) {
+                    //...
+                } else {
+                    Intent intent = new Intent();
+                    intent.putExtra("gameName", gameName);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
             }
         });
     }

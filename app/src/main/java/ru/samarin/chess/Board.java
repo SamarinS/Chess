@@ -9,12 +9,7 @@ public class Board {
     
     
     public Board() {
-        for(int i = 0;i < n;i++) {
-            for(int j = 0;j < n;j++) {
-                colors[i][j] = Color.NONE;
-                pieces[i][j] = Piece.NONE;
-            }
-        }
+        clear();
     }
     
     public void setSquare(Square sq, Piece p, Color c) {
@@ -52,6 +47,14 @@ public class Board {
     public Color getColor(String sqString) {
         Square sq = new Square(sqString);
         return colors[sq.i][sq.j];
+    }
+
+    public void clear() {
+        for(int i = 0;i < n;i++) {
+            for(int j = 0;j < n;j++) {
+                setSquareEmpty(new Square(i, j));
+            }
+        }
     }
     
 // --Commented out by Inspection START (18.06.2015 14:32):

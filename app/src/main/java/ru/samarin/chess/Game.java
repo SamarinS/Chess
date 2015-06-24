@@ -22,15 +22,31 @@ public class Game {
 
     
     public class CastlingState {
-        private boolean blackShort = true;
-        private boolean whiteShort = true; 
-        private boolean blackLong = true;
-        private boolean whiteLong = true;
+        private boolean blackShort;
+        private boolean whiteShort;
+        private boolean blackLong;
+        private boolean whiteLong;
 
-        int blackShortBreakingMove = -1;
-        int whiteShortBreakingMove = -1;
-        int blackLongBreakingMove = -1;
-        int whiteLongBreakingMove = -1;
+        int blackShortBreakingMove;
+        int whiteShortBreakingMove;
+        int blackLongBreakingMove;
+        int whiteLongBreakingMove;
+
+        private CastlingState() {
+            clear();
+        }
+
+        private void clear() {
+            blackShort = true;
+            whiteShort = true;
+            blackLong = true;
+            whiteLong = true;
+
+            blackShortBreakingMove = -1;
+            whiteShortBreakingMove = -1;
+            blackLongBreakingMove = -1;
+            whiteLongBreakingMove = -1;
+        }
 
         private void onUnMakeMove(int moveNumber) {
             if(moveNumber == castlingState.whiteShortBreakingMove) {
@@ -197,7 +213,12 @@ public class Game {
     }
     
     public void setInitialPosition() {
-        //state = State.PROCESS;
+        moveHistory.clear();
+        capturedPieceHistory.clear();
+        castlingState.clear();
+        board.clear();
+
+        state = State.PROCESS;
         sideToMove = Color.WHITE;
         
         for(int j = 0;j < 8;j++) {
